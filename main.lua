@@ -9,7 +9,7 @@ local Stats = require "src.game.Stats"
 local fade = {
     fadeDuration = 2,  -- In seconds
     fadeOpacity = 0,       -- For fading out screen
-    musicVolume = 1     -- For fading out music
+    musicVolume = .5     -- For fading out music
 }
 
 
@@ -24,8 +24,10 @@ function love.load()
     titleBg = love.graphics.newImage("graphics/backgrounds/titlescreen.png")
     dayBg = love.graphics.newImage('graphics/backgrounds/cafe-day.png')
     nightBg = love.graphics.newImage('graphics/backgrounds/cafe-night.png')
+    gameOverBg = love.graphics.newImage('graphics/backgrounds/gameOverScreen.png')
 
     counter = love.graphics.newImage('graphics/backgrounds/counter.png')
+    timeOutClipboard = love.graphics.newImage('graphics/backgrounds/clipboard.png')
 end
 
 -- When the game window resizes
@@ -53,6 +55,9 @@ function love.keypressed(key)
     elseif key == "return" and gameState == "nightState" and not bgTween then
         Sounds['bell']:play()
         bgTween = Tween.new(fade.fadeDuration, fade, {fadeOpacity = 1, musicVolume = 0}, 'linear')
+    
+    elseif key == 'return' and gameState == "over" then
+        gameState = 'start'
     end
 end
 
@@ -62,8 +67,6 @@ end
 
 -- Update is executed each frame, dt is delta time (a fraction of a sec)
 function love.update(dt)
-    stats:update(dt)
-
     if gameState == "start" then
         Sounds['titleMusic']:play()
 
@@ -74,23 +77,24 @@ function love.update(dt)
             -- Tween completed, reset vars and switch gamestate
             if bgComplete then
                 Sounds['titleMusic']:stop()
-                Sounds['titleMusic']:setVolume(1)
+                Sounds['titleMusic']:setVolume(musicVolume)
                 stats:startDayPhase()
                 bgTween:reset()
                 bgTween = nil
             end
         end
     elseif gameState == "dayState" then
-        Sounds['titleMusic']:play()
+        stats:update(dt)
+        Sounds['dayMusic']:play()
 
         if bgTween then
-            Sounds['titleMusic']:setVolume(fade.musicVolume)
+            Sounds['dayMusic']:setVolume(fade.musicVolume)
             bgComplete = bgTween:update(dt)
 
             -- Tween completed, reset vars and switch gamestate
             if bgComplete then
-                Sounds['titleMusic']:stop()
-                Sounds['titleMusic']:setVolume(1)
+                Sounds['dayMusic']:stop()
+                Sounds['dayMusic']:setVolume(musicVolume)
                 stats:startNightPhase()
                 bgTween:reset()
                 bgTween = nil
@@ -98,6 +102,7 @@ function love.update(dt)
         end
 
     elseif gameState == "nightState" then
+        stats:update(dt)
         Sounds['nightMusic']:play()
 
         if bgTween then
@@ -108,7 +113,7 @@ function love.update(dt)
             -- Tween completed, reset vars and switch gamestate
             if bgComplete then
                 Sounds['nightMusic']:stop()
-                Sounds['nightMusic']:setVolume(1)
+                Sounds['nightMusic']:setVolume(musicVolume)
                 stats:startDayPhase()
                 bgTween:reset()
                 bgTween = nil
@@ -116,6 +121,8 @@ function love.update(dt)
         end
         
     elseif gameState == "over" then
+        Sounds['dayMusic']:stop()
+        Sounds['bell']:stop()
 
     end
 end
@@ -138,10 +145,6 @@ function love.draw()
     elseif gameState == "dayState" then
         drawDayState()
         stats:draw()
-
-        if not stats.timerRunning then
-            love.graphics.print("time over, click enter to continue", titleFont,200, 200)
-        end
 
         if bgTween then
             love.graphics.setColor(0, 0, 0, fade.fadeOpacity)
@@ -181,17 +184,23 @@ function drawDayState()
     stats:draw()
     love.graphics.draw(dayBg, 0, 0)
     love.graphics.draw(counter, 0, 0)
-    love.graphics.printf("Espresso Express Game Page", titleFont, 0, 50,
-    gameWidth, "center")
+    if not stats.timerRunning then
+        love.graphics.draw(timeOutClipboard, 0, -60)
+    end
 end
 
 function drawNightState()
     stats:draw()
     love.graphics.draw(nightBg, 0, 0)
-    love.graphics.printf("Espresso Express Game Night Page", titleFont, 0, 50,
-    gameWidth, "center")
+    love.graphics.draw(timeOutClipboard, 0, -60)
 end
 
 function drawGameOverState()
+    love.graphics.draw(gameOverBg, 0, 0)
+    love.graphics.print("Game Over", gameOverFont, gameWidth/2 -120, 60)
+    love.graphics.printf("Day "..tostring(stats.day).." End", statFontLarge, gameWidth/2-110,150,200,"center")
+    love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit: Total Coins:", statFontSmall, gameWidth/2-110,200,200,"center")
+    love.graphics.printf("You could not pay your rent, and the cafe was shut down", gameOverFont, gameWidth/2 - 350, 510, 650, "center")
+    love.graphics.print("press enter to play again", gameOverFont, gameWidth/2 -230, 650)
 
 end

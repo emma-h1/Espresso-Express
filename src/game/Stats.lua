@@ -37,6 +37,14 @@ function Stats:draw()
     love.graphics.printf(tostring(self.totalScore).."/"..tostring(self.targetScore), statFontSmall,90,65,200)
     love.graphics.printf(tostring(self.coins), statFontLarge,270,30,200)
     love.graphics.printf("Day "..tostring(self.day), statFontLarge,gameWidth-150,45,200)
+
+    if not self.timerRunning and gameState == "dayState" then
+        love.graphics.setColor(0,0,0)
+        love.graphics.printf("Day "..tostring(self.day).." End", statFontLarge, gameWidth/2-110,140,200,"center")
+        love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit:", statFontSmall, gameWidth/2-110,190,200,"center")
+        love.graphics.printf("Press Enter to Continue", statFontLarge, gameWidth/2-270,630,500,"center")
+        love.graphics.setColor(1,1,1)
+    end
 end
     
 function Stats:update(dt)
@@ -44,6 +52,13 @@ function Stats:update(dt)
 
     if self.timeOut then
         self:handleTimeOut()
+    end
+
+    -- Game ends when the player has a negative nubmer of coins at the end of the day
+    if not self.timerRunning and self.coins < 0 then
+        Sounds['gameOver']:play()
+        Sounds['glassBreak']:play()
+        gameState = "over"
     end
 end
 
@@ -80,7 +95,9 @@ function Stats:clock()
     self.elapsedSecs = self.elapsedSecs + 1
     
     if self.elapsedSecs >= self.maxSecs then
-        Sounds['timeOver']:play()
+        if self.coins >= 0 then
+            Sounds['timeOver']:play()
+        end
         self.timeOut = true
     end
 end

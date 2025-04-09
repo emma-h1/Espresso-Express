@@ -1,3 +1,4 @@
+local Globals = require "src.Globals"
 -- Sound Dictionary / Table
 local sounds = {}  -- create an empty table
 
@@ -8,10 +9,17 @@ sounds['nightMusic'] = love.audio.newSource("sounds/Cozy-Place-Chill-Background-
 sounds['crickets'] = love.audio.newSource("sounds/crickets.mp3","static")
 sounds['doorClose'] = love.audio.newSource("sounds/door-lock.mp3","static")
 sounds['timeOver'] = love.audio.newSource('sounds/timeOver.mp3', 'static')
+sounds['gameOver'] = love.audio.newSource('sounds/brass-fail.mp3', 'static')
+sounds['glassBreak'] = love.audio.newSource('sounds/glass-being-knocked-over-103473.mp3', 'static')
+sounds['dayMusic'] = love.audio.newSource('sounds/mug-full-of-tunes.mp3','static')
 -- Config music options
 sounds['titleMusic']:setLooping(true) -- game music is looped
-sounds['titleMusic']:setVolume(1)
-
+sounds['dayMusic']:setLooping(true)
 sounds['nightMusic']:setLooping(true)
+sounds['titleMusic']:setVolume(musicVolume)
+sounds['dayMusic']:setVolume(musicVolume)
+sounds['nightMusic']:setVolume(musicVolume)
+-- Config sound effect options
+sounds['crickets']:setVolume(.4)
 
 return sounds
