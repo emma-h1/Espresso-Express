@@ -4,6 +4,8 @@ local Sounds = require "src.game.SoundEffects"
 local Tween = require "libs.tween"
 local Stats = require "src.game.Stats"
 
+local arrowX, arrowY = 890, 580
+local buttons = {}
 
 -- Variables for fade transition between states
 local fade = {
@@ -28,6 +30,7 @@ function love.load()
 
     counter = love.graphics.newImage('graphics/backgrounds/counter.png')
     timeOutClipboard = love.graphics.newImage('graphics/backgrounds/clipboard.png')
+    kitchenArrow = love.graphics.newImage('graphics/detail/kitchen-arrow.png')
 end
 
 -- When the game window resizes
@@ -50,19 +53,19 @@ function love.keypressed(key)
     elseif key == "return" and gameState == "dayState" and not stats.timerRunning and not bgTween then
         Sounds['crickets']:play()
         Sounds['doorClose']:play()
-        bgTween = Tween.new(fade.fadeDuration, fade, {fadeOpacity = 1, musicVolume = 0}, 'linear')
-
+        bgTween = Tween.new(fade.fadeDuration, fade, {fadeOpacity = 1, musicVolume = 0}, 'linear')        
+    elseif key == "right" and gameState == "dayState" and stats.elapsedSecs < stats.maxSecs then
+        gameState = "kitchenState"
+        -- resets to day if time runs out in kitchen
+    else if key == "left" and gameState == "kitchenState" or gameState == "kitchenState" and stats.elaspsedSecs == stats.maxSecs then
+        gameState = "dayState"
     elseif key == "return" and gameState == "nightState" and not bgTween then
         Sounds['bell']:play()
         bgTween = Tween.new(fade.fadeDuration, fade, {fadeOpacity = 1, musicVolume = 0}, 'linear')
-    
     elseif key == 'return' and gameState == "over" then
         gameState = 'start'
     end
 end
-
-function love.mousepressed(x, y, button, istouch)
-
 end
 
 -- Update is executed each frame, dt is delta time (a fraction of a sec)
@@ -100,8 +103,15 @@ function love.update(dt)
                 bgTween = nil
             end
         end
+    else if gameState == "kitchenState" then
+        stats:update(dt)
 
     elseif gameState == "nightState" then
+        -- indicate night to reset timer
+        if not stats.nightStarted then
+            stats:startNightPhase()
+            stats.nightStarted = true
+        end
         stats:update(dt)
         Sounds['nightMusic']:play()
 
@@ -114,6 +124,7 @@ function love.update(dt)
             if bgComplete then
                 Sounds['nightMusic']:stop()
                 Sounds['nightMusic']:setVolume(musicVolume)
+                stats.nightStarted = false
                 stats:startDayPhase()
                 bgTween:reset()
                 bgTween = nil
@@ -151,6 +162,9 @@ function love.draw()
             love.graphics.rectangle("fill", 0, 0, gameWidth, gameHeight)
             love.graphics.setColor(1, 1, 1, 1)
         end
+    elseif gameState == "kitchenState" then
+        drawKitchenState{}
+        stats:draw()
 
     elseif gameState == 'nightState' then
         drawNightState()
@@ -171,6 +185,7 @@ function love.draw()
     end
 
     Push:finish()
+    end
 end
 
 function drawStartState()
@@ -184,6 +199,9 @@ function drawDayState()
     stats:draw()
     love.graphics.draw(dayBg, 0, 0)
     love.graphics.draw(counter, 0, 0)
+    if stats.timerRunning then
+        love.graphics.draw(kitchenArrow, 60, -70)
+    end
     if not stats.timerRunning then
         love.graphics.draw(timeOutClipboard, 0, -60)
     end
@@ -195,12 +213,16 @@ function drawNightState()
     love.graphics.draw(timeOutClipboard, 0, -60)
 end
 
+function drawKitchenState()
+    if stats.timerRunning then 
+        love.graphics.draw(counter,0,0)
+    end
+end
+
 function drawGameOverState()
     love.graphics.draw(gameOverBg, 0, 0)
     love.graphics.print("Game Over", gameOverFont, gameWidth/2 -120, 60)
     love.graphics.printf("Day "..tostring(stats.day).." End", statFontLarge, gameWidth/2-110,150,200,"center")
     love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit: Total Coins:", statFontSmall, gameWidth/2-110,200,200,"center")
     love.graphics.printf("You could not pay your rent, and the cafe was shut down", gameOverFont, gameWidth/2 - 350, 510, 650, "center")
-    love.graphics.print("press enter to play again", gameOverFont, gameWidth/2 -230, 650)
-
 end

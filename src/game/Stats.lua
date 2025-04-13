@@ -19,6 +19,7 @@ function Stats:init()
     self.timeOut = false -- when time is out
     self.timerRunning = false -- control timer activation between day/night
 
+    self.nightStarted = false
     self.timer = Timer.new()
 
     self.timer:every(1, function() 
@@ -63,11 +64,17 @@ function Stats:update(dt)
 end
 
 function Stats:handleTimeOut()
+    if gameState == "kitchenState" then
+        gameState = "dayState"
+    end
     if gameState == "dayState" then
         -- Stop timer when day time is out
         self.timerRunning = false
     end
-    
+    --reset timer for night cycle
+    if gameState == "nightState" then
+        self.timerRunning = false
+    end
     self.timeOut = false
 end
 
@@ -79,6 +86,10 @@ function Stats:startDayPhase()
     self.day = self.day + 1
 end
 
+function Stats:startKitchenPhase()
+    gameState = "kitchenState"
+    self.timerRunning = true
+end
 function Stats:addScore(n)
     self.totalScore = self.totalScore + n
     if self.totalScore >= self.targetScore then
@@ -105,7 +116,9 @@ end
 function Stats:startNightPhase()
     -- Transition to night phase
     gameState = "nightState"
-    self.timerRunning = false
+    self.elapsedSecs = 0
+    self.timerRunning = true
+
 end
     
 return Stats
