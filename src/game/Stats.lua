@@ -10,7 +10,7 @@ function Stats:init()
     self.totalScore = 0 -- total score so far
     self.targetScore = 100
 
-    self.coins = 0
+    self.coins = 500
 
     self.day = 0
 
@@ -90,6 +90,7 @@ function Stats:startKitchenPhase()
     gameState = "kitchenState"
     self.timerRunning = true
 end
+
 function Stats:addScore(n)
     self.totalScore = self.totalScore + n
     if self.totalScore >= self.targetScore then
@@ -106,7 +107,7 @@ function Stats:clock()
     self.elapsedSecs = self.elapsedSecs + 1
     
     if self.elapsedSecs >= self.maxSecs then
-        if self.coins >= 0 then
+        if self.coins >= 0 and gameState == 'dayState' then
             Sounds['timeOver']:play()
         end
         self.timeOut = true

@@ -12,6 +12,9 @@ sounds['timeOver'] = love.audio.newSource('sounds/timeOver.mp3', 'static')
 sounds['gameOver'] = love.audio.newSource('sounds/brass-fail.mp3', 'static')
 sounds['glassBreak'] = love.audio.newSource('sounds/glass-being-knocked-over-103473.mp3', 'static')
 sounds['dayMusic'] = love.audio.newSource('sounds/mug-full-of-tunes.mp3','static')
+sounds['pageTurn'] = love.audio.newSource('sounds/turnpage.mp3','static')
+sounds['purchase'] = love.audio.newSource('sounds/purchase.mp3','static')
+sounds['equip'] = love.audio.newSource('sounds/equip.mp3','static')
 -- Config music options
 sounds['titleMusic']:setLooping(true) -- game music is looped
 sounds['dayMusic']:setLooping(true)

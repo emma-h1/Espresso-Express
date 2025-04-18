@@ -3,6 +3,7 @@ local Push = require "libs.push"
 local Sounds = require "src.game.SoundEffects"
 local Tween = require "libs.tween"
 local Stats = require "src.game.Stats"
+local Shop = require "src.game.Shop"
 
 local arrowX, arrowY = 890, 580
 local buttons = {}
@@ -22,11 +23,13 @@ function love.load()
     bgTween = nil
 
     stats = Stats()
+    shop = Shop(stats)
 
     titleBg = love.graphics.newImage("graphics/backgrounds/titlescreen.png")
     dayBg = love.graphics.newImage('graphics/backgrounds/cafe-day.png')
     nightBg = love.graphics.newImage('graphics/backgrounds/cafe-night.png')
     gameOverBg = love.graphics.newImage('graphics/backgrounds/gameOverScreen.png')
+    kitchenBg = love.graphics.newImage('graphics/backgrounds/kitchen.png')
 
     counter = love.graphics.newImage('graphics/backgrounds/counter.png')
     timeOutClipboard = love.graphics.newImage('graphics/backgrounds/clipboard.png')
@@ -62,10 +65,25 @@ function love.keypressed(key)
     elseif key == "return" and gameState == "nightState" and not bgTween then
         Sounds['bell']:play()
         bgTween = Tween.new(fade.fadeDuration, fade, {fadeOpacity = 1, musicVolume = 0}, 'linear')
+    elseif (key == 'left' or key == 'right') and gameState == 'nightState' and not bgTween then
+        if shop.currentTab == "upgrades" then
+            shop.currentTab = "decor"
+            Sounds['pageTurn']:play()
+        else
+            shop.currentTab = "upgrades"
+            Sounds['pageTurn']:play()
+        end
     elseif key == 'return' and gameState == "over" then
         gameState = 'start'
     end
 end
+end
+
+function love.mousepressed(x ,y, button, istouch)
+    local gx, gy = Push:toGame(x,y)
+    if button == 1 and gameState == 'nightState' then
+        shop:mousepressed(gx, gy)
+    end
 end
 
 -- Update is executed each frame, dt is delta time (a fraction of a sec)
@@ -169,6 +187,7 @@ function love.draw()
     elseif gameState == 'nightState' then
         drawNightState()
         stats:draw()
+        shop:draw()
 
         if bgTween then
             love.graphics.setColor(1, 1, 1, fade.fadeOpacity)
@@ -196,25 +215,26 @@ function drawStartState()
 end
 
 function drawDayState()
-    stats:draw()
     love.graphics.draw(dayBg, 0, 0)
-    love.graphics.draw(counter, 0, 0)
+    shop:drawEquippedDecor()
     if stats.timerRunning then
         love.graphics.draw(kitchenArrow, 60, -70)
     end
+    love.graphics.draw(counter, 0, 0)
+
     if not stats.timerRunning then
         love.graphics.draw(timeOutClipboard, 0, -60)
     end
 end
 
 function drawNightState()
-    stats:draw()
     love.graphics.draw(nightBg, 0, 0)
     love.graphics.draw(timeOutClipboard, 0, -60)
 end
 
 function drawKitchenState()
     if stats.timerRunning then 
+        love.graphics.draw(kitchenBg, 0, 0)
         love.graphics.draw(counter,0,0)
     end
 end
