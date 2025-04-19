@@ -4,6 +4,7 @@ local Sounds = require "src.game.SoundEffects"
 local Tween = require "libs.tween"
 local Stats = require "src.game.Stats"
 local Shop = require "src.game.Shop"
+local anim8 = require "libs.anim8"
 
 local arrowX, arrowY = 890, 580
 local buttons = {}
@@ -34,6 +35,11 @@ function love.load()
     counter = love.graphics.newImage('graphics/backgrounds/counter.png')
     timeOutClipboard = love.graphics.newImage('graphics/backgrounds/clipboard.png')
     kitchenArrow = love.graphics.newImage('graphics/detail/kitchen-arrow.png')
+
+    -- Load coffee cup sprite sheet and animation
+    coffeeCupImage = love.graphics.newImage("graphics/sprites/coffeeCupAnimate.png")
+    coffeeCupGrid = anim8.newGrid(230, 300, coffeeCupImage:getWidth(), coffeeCupImage:getHeight())
+    coffeeCupAnimation = anim8.newAnimation(coffeeCupGrid('1-4', 1), 0.2)
 end
 
 -- When the game window resizes
@@ -75,8 +81,6 @@ function love.keypressed(key)
         end
     elseif key == 'return' and gameState == "over" then
         gameState = 'start'
-    elseif key == 'l' and gameState == 'dayState' then
-        stats:addScore(10)
     end
 end
 end
@@ -90,6 +94,10 @@ end
 
 -- Update is executed each frame, dt is delta time (a fraction of a sec)
 function love.update(dt)
+    if bgTween and coffeeCupAnimation then
+        coffeeCupAnimation:update(dt)
+    end
+
     if gameState == "start" then
         Sounds['titleMusic']:play()
 
@@ -199,6 +207,13 @@ function love.draw()
 
     elseif gameState == "over" then
         drawGameOverState()    
+    end
+
+    -- Draw animation over fade
+    if bgTween and coffeeCupAnimation then
+        local cupX = gameWidth - 250
+        local cupY = gameHeight - 320
+        coffeeCupAnimation:draw(coffeeCupImage, cupX, cupY)
     end
 
     if debugFlag then
