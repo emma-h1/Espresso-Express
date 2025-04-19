@@ -19,6 +19,14 @@ function Stats:init()
     self.timeOut = false -- when time is out
     self.timerRunning = false -- control timer activation between day/night
 
+    -- Tween xp and coins when value changes, value lowers then disappears
+    self.tweenScore = nil
+    self.scoreY = 0
+    self.tweenCoin = nil
+    self.coinY = 0
+    self.tweenScoreValue = 0
+    self.tweenCoinValue = 0
+
     self.nightStarted = false
     self.timer = Timer.new()
 
@@ -46,6 +54,24 @@ function Stats:draw()
         love.graphics.printf("Press Enter to Continue", statFontLarge, gameWidth/2-270,630,500,"center")
         love.graphics.setColor(1,1,1)
     end
+
+    if self.tweenScore then
+        love.graphics.setFont(statFontLarge)
+        love.graphics.setColor(.2, .4, .2)
+        love.graphics.print(self.tweenScoreValue, 67, self.scoreY)
+        love.graphics.setColor(1, 1, 1)
+    end
+
+    if self.tweenCoin then
+        love.graphics.setFont(statFontLarge)
+        if self.tweenCoinValue > 0 then
+            love.graphics.setColor(.2, .4, .2)
+        else
+            love.graphics.setColor(.5, .2, .2)
+        end
+        love.graphics.print(self.tweenCoinValue, 270, self.coinY)
+        love.graphics.setColor(1, 1, 1)
+    end
 end
     
 function Stats:update(dt)
@@ -54,6 +80,16 @@ function Stats:update(dt)
     if self.timeOut then
         self:handleTimeOut()
     end
+
+    if self.tweenScore then
+        self.tweenScore:update(dt)
+    end
+
+    if self.tweenCoin then
+        self.tweenCoin:update(dt)
+    end
+
+    Timer.update(dt)
 
     -- Game ends when the player has a negative nubmer of coins at the end of the day
     if not self.timerRunning and self.coins < 0 then
@@ -96,6 +132,21 @@ function Stats:addScore(n)
     if self.totalScore >= self.targetScore then
         self:levelUp()
     end
+
+    self.tweenScoreValue = n
+    self.scoreY = 85
+    self.tweenScore = Tween.new(1, self, {scoreY = self.scoreY + 10})
+
+    Timer.after(1, function() self.tweenScore = nil end)
+end
+
+function Stats:addOrSubtractCoin(n)
+    self.coins = self.coins + n
+    self.tweenCoinValue = n
+    self.coinY = 55
+    self.tweenCoin = Tween.new(1, self, {coinY = self.coinY + 10})
+
+    Timer.after(1, function() self.tweenCoin = nil end)
 end
 
 function Stats:levelUp()

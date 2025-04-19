@@ -75,6 +75,8 @@ function love.keypressed(key)
         end
     elseif key == 'return' and gameState == "over" then
         gameState = 'start'
+    elseif key == 'l' and gameState == 'dayState' then
+        stats:addScore(10)
     end
 end
 end
