@@ -17,6 +17,7 @@ local Shop = require "src.game.Shop"
 local anim8 = require "libs.anim8"
 local Ingredients = require "src.game.Ingredients"
 local Drink = require "src.game.Drink"
+local Tutorial = require "src.game.Tutorial"
 
 local arrowX, arrowY = 890, 580
 local buttons = {}
@@ -34,6 +35,8 @@ function love.load()
     love.window.setTitle("Espresso Express")
     Push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false, resizable = true})
     bgTween = nil
+
+    tutorial = Tutorial()
 
     stats = Stats()
     drink = Drink()
@@ -100,6 +103,22 @@ function love.keypressed(key)
         stats = Stats()
         ingredients = Ingredients()
         shop = Shop(stats, ingredients)
+    elseif key == 't' and gameState == "start" then
+        gameState = 'tutorialState'
+    elseif key == 'right' and gameState == "tutorialState" then
+        tutorial.currentPage = tutorial.currentPage + 1
+        if tutorial.currentPage > tutorial.totalPages then
+            tutorial.currentPage = 1
+        end
+        Sounds['pageTurn']:play()
+    elseif key == 'left' and gameState == 'tutorialState' then
+        tutorial.currentPage = tutorial.currentPage - 1
+        if tutorial.currentPage < 1 then
+            tutorial.currentPage = tutorial.totalPages
+        end
+        Sounds['pageTurn']:play()
+    elseif key == 'return' and gameState == 'tutorialState' then
+        gameState = "start"
     end
 end
 
@@ -241,6 +260,9 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
         end
 
+    elseif gameState == 'tutorialState' then
+        drawTutorialState()
+
     elseif gameState == "over" then
         drawGameOverState()    
     end
@@ -264,6 +286,7 @@ function drawStartState()
 
     love.graphics.printf("press enter to play or escape to exit", titleFont,
         0, 650, gameWidth, "center")
+    love.graphics.printf("press 't' for a tutorial", titleFont, 0, 690, gameWidth, "center")
 end
 
 function drawDayState()
@@ -300,4 +323,13 @@ function drawGameOverState()
     love.graphics.printf("Day "..tostring(stats.day).." End", statFontLarge, gameWidth/2-110,150,200,"center")
     love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit: Total Coins:", statFontSmall, gameWidth/2-110,200,200,"center")
     love.graphics.printf("You could not pay your rent, and the cafe was shut down", gameOverFont, gameWidth/2 - 350, 510, 650, "center")
+end
+
+function drawTutorialState()
+    love.graphics.draw(titleBg, 0, 0)
+    love.graphics.draw(timeOutClipboard, 0, 0)
+    tutorial:draw()
+    love.graphics.printf("Use arrows to navigate the tutorial", statFontSmall, gameWidth/2-320,670,600,"center")
+    love.graphics.printf("Press Enter to return to Start screen", statFontLarge, gameWidth/2-320,700,600,"center")
+    love.graphics.setColor(1,1,1,1)
 end
