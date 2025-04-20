@@ -1,5 +1,6 @@
 local Class = require "libs.hump.class"
 local Sounds = require "src.game.SoundEffects"
+local Timer = require "libs.hump.timer"
 
 local Drink = Class{}
 
@@ -13,6 +14,8 @@ function Drink:init()
         syrups = nil,
         sugars = nil
     }
+
+    self.timer = Timer.new()
     
     self.x = 430 -- Starting X of drink
     self.y = 450 -- Starting Y of drink
@@ -35,10 +38,19 @@ function Drink:init()
     self.chocolateSyrup = love.graphics.newImage('graphics/drinkCombos/chocolateSyrup.png')
 
     self.buildStation = love.graphics.newImage('graphics/sprites/napkin.png')
+
+    self.animationX = 400 -- Staring x position of animation
+    self.animationY = 300 -- Starting y position of animation
+    self.isAnimating = nil -- Is an animation happening true/nil
+    self.currentAnimationSheet = nil -- For drawing
+    self.currentAnimation = nil -- For drawing
 end
 
 -- Add an ingredient to drink
-function Drink:addIngredient(category, name)
+function Drink:addIngredient(category, name, ingredient)
+    if self.isAnimating then -- Do not allow more ingredients if animation is in progress
+        return
+    end
     -- Require a cup to be placed before anything
     if self.includedIngredients.cups == nil and category ~= "cups" then
         return
@@ -51,7 +63,6 @@ function Drink:addIngredient(category, name)
 
     -- Only add ingredient if there is no other ingredient in the same category in the drink
     if not self.includedIngredients[category] then
-        self.includedIngredients[category] = name
         -- Play sound effects
         if category == "cups" then
             Sounds['glassClink']:play()
@@ -66,7 +77,26 @@ function Drink:addIngredient(category, name)
         elseif category == "whippedCreams" then
             Sounds['cream']:play()
         end
+
+        if ingredient.hasAnimation == false then
+            self.includedIngredients[category] = name -- ingredient doesn't have animation, immediately add to drink
+        else
+            self:startAnimation(category, name, ingredient)
+        end
     end
+end
+
+function Drink:startAnimation(category, name, ingredient)
+    self.isAnimating = true
+    self.currentAnimationSheet = ingredient.animationSheet
+    self.currentAnimation = ingredient.animation
+
+    self.timer:clear()
+
+    -- New ingredient is not drawn in drink until animation is done
+    self.timer:after(1, function()  -- After the animation ends, add ingredient to drink so it can be drawn
+        self.includedIngredients[category] = name
+        self:resetAnimation() end)
 end
 
 -- Clear the current drink
@@ -79,6 +109,21 @@ function Drink:reset()
         syrups = nil,
         sugars = nil
     }
+
+    self:resetAnimation()
+end
+
+function Drink:resetAnimation()
+    self.isAnimating = nil
+    self.currentAnimationSheet = nil
+    self.currentAnimation = nil
+end
+
+function Drink:update(dt)
+    self.timer:update(dt)
+    if self.isAnimating then
+        self.currentAnimation:update(dt) -- Update the animation
+    end
 end
 
 function Drink:draw()
@@ -120,6 +165,11 @@ function Drink:draw()
     -- Draw the whipped cream of the drink, if any
     if self.includedIngredients.whippedCreams then
         love.graphics.draw(self.whippedCream, self.x, self.y)
+    end
+
+    -- Draw the animation, if occurring
+    if self.isAnimating then
+        self.currentAnimation:draw(self.currentAnimationSheet, self.animationX, self.animationY)
     end
 end
 

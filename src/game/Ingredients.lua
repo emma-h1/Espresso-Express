@@ -1,5 +1,6 @@
 local Class = require "libs.hump.class"
 local Globals = require "src.Globals"
+local anim8 = require "libs.anim8"
 
 local Ingredients = Class{}
 
@@ -14,7 +15,8 @@ function Ingredients:init(drink)
             x = 50,  -- Starting X 
             y = 115, -- Starting Y
             itemWidth = mugSprite:getWidth(), -- Width of the image
-            itemHeight = mugSprite:getHeight() -- Height of the image
+            itemHeight = mugSprite:getHeight(), -- Height of the image
+            hasAnimation = false -- Ideally, everything would have an animation
         },
         {
             name = "Glass", 
@@ -22,11 +24,16 @@ function Ingredients:init(drink)
             x = 200, 
             y = 115,
             itemWidth = glassSprite:getWidth(),
-            itemHeight = glassSprite:getHeight()
+            itemHeight = glassSprite:getHeight(),
+            hasAnimation = false
         }
     }
 
     local coffeePotSprite = love.graphics.newImage('graphics/sprites/coffeePot.png')
+    -- Sprites for animation
+    local coffeePotAnimateImg = love.graphics.newImage("graphics/animationSprites/coffeePotAnimate.png")
+    local coffeePotGrid = anim8.newGrid(300, 400, coffeePotAnimateImg:getWidth(), coffeePotAnimateImg:getHeight())
+    local coffeePotAnimation = anim8.newAnimation(coffeePotGrid('1-5', 1), 0.2)
     self.coffees = {
         {
             name = "Coffee", 
@@ -34,13 +41,21 @@ function Ingredients:init(drink)
             x = 830, 
             y = 280,
             itemWidth = coffeePotSprite:getWidth(),
-            itemHeight = coffeePotSprite:getHeight()
+            itemHeight = coffeePotSprite:getHeight(),
+            hasAnimation = true,
+            animationSheet = coffeePotAnimateImg,
+            animation = coffeePotAnimation
         }
     }
 
     local regularMilkSprite = love.graphics.newImage('graphics/sprites/milk.png')
     local almondMilkSprite = love.graphics.newImage('graphics/upgrades/almondMilk.png')
     local oatMilkSprite = love.graphics.newImage('graphics/upgrades/oatMilk.png')
+
+    -- Load regular milk sprite sheet and animation
+    local milkAnimateImage = love.graphics.newImage("graphics/animationSprites/milkAnimate.png")
+    local milkGrid = anim8.newGrid(300, 400, milkAnimateImage:getWidth(), milkAnimateImage:getHeight())
+    local milkAnimation = anim8.newAnimation(milkGrid('1-5', 1), 0.2)
     self.milks = {
         {
             name = "Regular Milk", 
@@ -48,7 +63,10 @@ function Ingredients:init(drink)
             x = 50, 
             y = 265,
             itemWidth = regularMilkSprite:getWidth(),
-            itemHeight = regularMilkSprite:getHeight()
+            itemHeight = regularMilkSprite:getHeight(),
+            hasAnimation = true,
+            animationSheet = milkAnimateImage,
+            animation = milkAnimation
         },
         {
             name = "Almond Milk", 
@@ -56,7 +74,8 @@ function Ingredients:init(drink)
             x = 200, 
             y = 265,
             itemWidth = almondMilkSprite:getWidth(),
-            itemHeight = almondMilkSprite:getHeight()
+            itemHeight = almondMilkSprite:getHeight(),
+            hasAnimation = false
         },
         {
             name = "Oat Milk", 
@@ -64,7 +83,8 @@ function Ingredients:init(drink)
             x = 350, 
             y = 265,
             itemWidth = oatMilkSprite:getWidth(),
-            itemHeight = oatMilkSprite:getHeight()
+            itemHeight = oatMilkSprite:getHeight(),
+            hasAnimation = false
         }
     }
 
@@ -76,7 +96,8 @@ function Ingredients:init(drink)
             x = 500, 
             y = 90,
             itemWidth = whippedCreamSprite:getWidth(),
-            itemHeight = whippedCreamSprite:getHeight()
+            itemHeight = whippedCreamSprite:getHeight(),
+            hasAnimation = false
         }
     }
 
@@ -89,7 +110,8 @@ function Ingredients:init(drink)
             x = 650, 
             y = 90,
             itemWidth = caramelSyrupSprite:getWidth(),
-            itemHeight = caramelSyrupSprite:getHeight()
+            itemHeight = caramelSyrupSprite:getHeight(),
+            hasAnimation = false
         },
         {
             name = "Chocolate Syrup", 
@@ -97,11 +119,16 @@ function Ingredients:init(drink)
             x = 800, 
             y = 90,
             itemWidth = chocolateSyrupSprite:getWidth(),
-            itemHeight = chocolateSyrupSprite:getHeight()
+            itemHeight = chocolateSyrupSprite:getHeight(),
+            hasAnimation = false
         }
     }
 
     local sugarSprite = love.graphics.newImage('graphics/sprites/sugar.png')
+    -- Load sugar sprite sheet and animation
+    local sugarAnimateImage = love.graphics.newImage("graphics/animationSprites/sugarAnimate.png")
+    local sugarGrid = anim8.newGrid(300, 400, sugarAnimateImage:getWidth(), sugarAnimateImage:getHeight())
+    local sugarAnimation = anim8.newAnimation(sugarGrid('1-5', 1), 0.2)
     self.sugars = {
         {
             name = "Sugar", 
@@ -109,7 +136,10 @@ function Ingredients:init(drink)
             x = 350, 
             y = 115,
             itemWidth = sugarSprite:getWidth(),
-            itemHeight = sugarSprite:getHeight()
+            itemHeight = sugarSprite:getHeight(),
+            hasAnimation = true,
+            animationSheet = sugarAnimateImage,
+            animation = sugarAnimation
         }
     }
 
@@ -187,7 +217,7 @@ function Ingredients:mousereleased(x, y)
         -- Check if mouse is released over building station area
         if self:collision(x, y, self.buildStationX, self.buildStationY, 
                           self.buildStationWdith, self.buildStationHeight) then
-            self.currentDrink:addIngredient(self.dragging.category, self.dragging.name)
+            self.currentDrink:addIngredient(self.dragging.category, self.dragging.name, self.dragging.ingredient)
         end
         
         -- Reset ingredient position when released and don't drag item anymore

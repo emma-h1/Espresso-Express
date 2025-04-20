@@ -1,9 +1,9 @@
 -- Authors: Callie Walker and Emma Heiser
 
 -- Animation 1: main.lua coffeeCupAnimate during tweens
--- Animation 2:
--- Animation 3:
--- Animation 4:
+-- Animation 2: Drink.lua coffee pot pour animation when coffee is added
+-- Animation 3: Drink.lua milk pour animation when milk is added
+-- Animation 4: Drink.lua sugar add animation when sugar is added
 -- Tween 1: main.lua tween fading the screen between states
 -- Tween 2: Stats.lua tween adding/subtracting coins and adding exp
 -- Particle Effect 1: CustomerParticles.lua particles appear around customer when drink is served
@@ -186,6 +186,7 @@ function love.update(dt)
         end
     elseif gameState == "kitchenState" then
         stats:update(dt)
+        drink:update(dt)
 
     elseif gameState == "nightState" then
         -- indicate night to reset timer
