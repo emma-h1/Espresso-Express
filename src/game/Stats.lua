@@ -10,11 +10,11 @@ function Stats:init()
     self.totalScore = 0 -- total score so far
     self.targetScore = 100
 
-    self.coins = 500
+    self.coins = 0
 
     self.day = 0
 
-    self.maxSecs = 5 -- max seconds for the level
+    self.maxSecs = 30 -- max seconds for the level
     self.elapsedSecs = 0 -- elapsed seconds
     self.timeOut = false -- when time is out
     self.timerRunning = false -- control timer activation between day/night
@@ -158,7 +158,7 @@ function Stats:clock()
     self.elapsedSecs = self.elapsedSecs + 1
     
     if self.elapsedSecs >= self.maxSecs then
-        if self.coins >= 0 and gameState == 'dayState' then
+        if self.coins >= 0 and (gameState == 'dayState' or gameState == 'kitchenState') then
             Sounds['timeOver']:play()
         end
         self.timeOut = true
@@ -169,7 +169,7 @@ function Stats:startNightPhase()
     -- Transition to night phase
     gameState = "nightState"
     self.elapsedSecs = 0
-    self.timerRunning = true
+    self.timerRunning = false
 
 end
     

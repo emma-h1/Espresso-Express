@@ -4,7 +4,9 @@ local Globals = require "src.Globals"
 
 local Shop = Class{}
 
-function Shop:init(stats)
+function Shop:init(stats, ingredients)
+    self.ingredients = ingredients
+
     -- Table of recipe upgrades
     self.upgrades = {
         {
@@ -12,35 +14,40 @@ function Shop:init(stats)
             minLvlRequired = 1,
             price = 20,
             purchased = false,
-            sprite = love.graphics.newImage('graphics/upgrades/almondMilk.png')
+            sprite = love.graphics.newImage('graphics/upgrades/almondMilk.png'),
+            unlock = function() table.insert(self.ingredients.unlocked.milks, "Almond Milk") end
         },
         {
             name = "Oat Milk",
             minLvlRequired = 3,
             price = 50,
             purchased = false,
-            sprite = love.graphics.newImage('graphics/upgrades/oatMilk.png')
+            sprite = love.graphics.newImage('graphics/upgrades/oatMilk.png'),
+            unlock = function() table.insert(self.ingredients.unlocked.milks, "Oat Milk") end
         },
         {
             name = "Whipped Cream",
             minLvlRequired = 5,
             price = 60,
             purchased = false,
-            sprite = love.graphics.newImage('graphics/upgrades/whippedCream.png')
+            sprite = love.graphics.newImage('graphics/upgrades/whippedCream.png'),
+            unlock = function() table.insert(self.ingredients.unlocked.whippedCreams, "Whipped Cream") end
         },
         {
             name = "Caramel Syrup",
             minLvlRequired = 10,
             price = 75,
             purchased = false,
-            sprite = love.graphics.newImage('graphics/upgrades/caramelSyrup.png')
+            sprite = love.graphics.newImage('graphics/upgrades/caramelSyrup.png'),
+            unlock = function() table.insert(self.ingredients.unlocked.syrups, "Caramel Syrup") end
         },
         {
             name = "Chocolate Syrup",
             minLvlRequired = 10,
             price = 75,
             purchased = false,
-            sprite = love.graphics.newImage('graphics/upgrades/chocolateSyrup.png')
+            sprite = love.graphics.newImage('graphics/upgrades/chocolateSyrup.png'),
+            unlock = function() table.insert(self.ingredients.unlocked.syrups, "Chocolate Syrup") end
         }
     }
 
@@ -152,8 +159,12 @@ function Shop:clickBuyButton(x, y, item, itemY)
     and self:buttonCollision(x, y, self.buyButtonCol, itemY + 10, self.buttonWidth, self.buttonHeight) then  
         if self.stats.coins >= item.price then
             item.purchased = true
-            self.stats.coins = self.stats.coins - item.price
+            self.stats:addOrSubtractCoin(-item.price)
             Sounds['purchase']:play()
+
+            if self.currentTab == 'upgrades' then
+                item.unlock()
+            end
         end
     end
 end

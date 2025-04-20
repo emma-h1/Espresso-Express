@@ -1,3 +1,13 @@
+-- Authors: Callie Walker and Emma Heiser
+
+-- Animation 1: main.lua coffeeCupAnimate during tweens
+-- Animation 2:
+-- Animation 3:
+-- Animation 4:
+-- Tween 1: main.lua tween fading the screen between states
+-- Tween 2: Stats.lua tween adding/subtracting coins and adding exp
+-- Particle Effect 1: CustomerParticles.lua particles appear around customer when drink is served
+
 local Globals = require "src.Globals"
 local Push = require "libs.push"
 local Sounds = require "src.game.SoundEffects"
@@ -5,6 +15,8 @@ local Tween = require "libs.tween"
 local Stats = require "src.game.Stats"
 local Shop = require "src.game.Shop"
 local anim8 = require "libs.anim8"
+local Ingredients = require "src.game.Ingredients"
+local Drink = require "src.game.Drink"
 
 local arrowX, arrowY = 890, 580
 local buttons = {}
@@ -24,7 +36,9 @@ function love.load()
     bgTween = nil
 
     stats = Stats()
-    shop = Shop(stats)
+    drink = Drink()
+    ingredients = Ingredients(drink)
+    shop = Shop(stats, ingredients)
 
     titleBg = love.graphics.newImage("graphics/backgrounds/titlescreen.png")
     dayBg = love.graphics.newImage('graphics/backgrounds/cafe-day.png')
@@ -37,7 +51,7 @@ function love.load()
     kitchenArrow = love.graphics.newImage('graphics/detail/kitchen-arrow.png')
 
     -- Load coffee cup sprite sheet and animation
-    coffeeCupImage = love.graphics.newImage("graphics/sprites/coffeeCupAnimate.png")
+    coffeeCupImage = love.graphics.newImage("graphics/animationSprites/coffeeCupAnimate.png")
     coffeeCupGrid = anim8.newGrid(230, 300, coffeeCupImage:getWidth(), coffeeCupImage:getHeight())
     coffeeCupAnimation = anim8.newAnimation(coffeeCupGrid('1-4', 1), 0.2)
 end
@@ -66,7 +80,7 @@ function love.keypressed(key)
     elseif key == "right" and gameState == "dayState" and stats.elapsedSecs < stats.maxSecs then
         gameState = "kitchenState"
         -- resets to day if time runs out in kitchen
-    else if key == "left" and gameState == "kitchenState" or gameState == "kitchenState" and stats.elaspsedSecs == stats.maxSecs then
+    elseif (key == "left" and gameState == "kitchenState") or (gameState == "kitchenState" and stats.elaspsedSecs == stats.maxSecs) then
         gameState = "dayState"
     elseif key == "return" and gameState == "nightState" and not bgTween then
         Sounds['bell']:play()
@@ -81,14 +95,34 @@ function love.keypressed(key)
         end
     elseif key == 'return' and gameState == "over" then
         gameState = 'start'
+
+        -- Reset everything for new game
+        stats = Stats()
+        ingredients = Ingredients()
+        shop = Shop(stats, ingredients)
     end
-end
 end
 
 function love.mousepressed(x ,y, button, istouch)
     local gx, gy = Push:toGame(x,y)
     if button == 1 and gameState == 'nightState' then
         shop:mousepressed(gx, gy)
+    elseif button == 1 and gameState == 'kitchenState' then
+        ingredients:mousepressed(gx, gy)
+    end
+end
+
+function love.mousereleased(x, y, button)
+    local gx, gy = Push:toGame(x,y)
+    if button == 1 and gameState == 'kitchenState' then
+        ingredients:mousereleased(gx, gy)
+    end
+end
+
+function love.mousemoved(x, y, button)
+    local gx, gy = Push:toGame(x,y)
+    if button == 1  and gameState == 'kitchenState' then
+        ingredients:mousemoved(gx, gy)
     end
 end
 
@@ -131,7 +165,7 @@ function love.update(dt)
                 bgTween = nil
             end
         end
-    else if gameState == "kitchenState" then
+    elseif gameState == "kitchenState" then
         stats:update(dt)
 
     elseif gameState == "nightState" then
@@ -191,7 +225,9 @@ function love.draw()
             love.graphics.setColor(1, 1, 1, 1)
         end
     elseif gameState == "kitchenState" then
-        drawKitchenState{}
+        drawKitchenState()
+        drink:draw()
+        ingredients:draw()
         stats:draw()
 
     elseif gameState == 'nightState' then
@@ -221,7 +257,6 @@ function love.draw()
     end
 
     Push:finish()
-    end
 end
 
 function drawStartState()
@@ -239,7 +274,10 @@ function drawDayState()
     end
     love.graphics.draw(counter, 0, 0)
 
+    drink:draw()
+
     if not stats.timerRunning then
+        drink:reset()
         love.graphics.draw(timeOutClipboard, 0, -60)
     end
 end

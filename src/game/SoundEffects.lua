@@ -15,6 +15,13 @@ sounds['dayMusic'] = love.audio.newSource('sounds/mug-full-of-tunes.mp3','static
 sounds['pageTurn'] = love.audio.newSource('sounds/turnpage.mp3','static')
 sounds['purchase'] = love.audio.newSource('sounds/purchase.mp3','static')
 sounds['equip'] = love.audio.newSource('sounds/equip.mp3','static')
+sounds['glassClink'] = love.audio.newSource('sounds/glass-clink.mp3', 'static')
+sounds['coffeePour'] = love.audio.newSource('sounds/pour-coffee.mp3', 'static')
+sounds['milkPour'] = love.audio.newSource('sounds/pouring-water.mp3', 'static')
+sounds['sugar'] = love.audio.newSource('sounds/sugar-into-sugar-bowl.mp3', 'static')
+sounds['syrup'] = love.audio.newSource('sounds/sharpie_on_paper.mp3', 'static')
+sounds['cream'] = love.audio.newSource('sounds/steam.mp3', 'static')
+
 -- Config music options
 sounds['titleMusic']:setLooping(true) -- game music is looped
 sounds['dayMusic']:setLooping(true)
@@ -24,5 +31,6 @@ sounds['dayMusic']:setVolume(musicVolume)
 sounds['nightMusic']:setVolume(musicVolume)
 -- Config sound effect options
 sounds['crickets']:setVolume(.4)
+sounds['cream']:setVolume(2)
 
 return sounds
