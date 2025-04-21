@@ -186,6 +186,12 @@ function Ingredients:collision(mouseX, mouseY, areaX, areaY, areaWidth, areaHeig
         and mouseY <= areaY + areaHeight
 end
 
+
+-- Returns unlocked items available to include in order
+function Ingredients:getUnlocked()
+    return self.unlocked
+end
+
 function Ingredients:mousepressed(x, y)
     -- Iterate through each name of ingredient in each category
     for category, _ in pairs(self.unlocked) do

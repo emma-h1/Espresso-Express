@@ -27,6 +27,11 @@ function Stats:init()
     self.tweenScoreValue = 0
     self.tweenCoinValue = 0
 
+    -- tracks number of customers spawned 
+    self.customerCount = 0
+    -- max number of customers for a specific day
+    self.totalCustomers = 0
+    
     self.nightStarted = false
     self.timer = Timer.new()
 
@@ -120,6 +125,9 @@ function Stats:startDayPhase()
     gameState = "dayState"
     self.timerRunning = true
     self.day = self.day + 1
+    self.customerCount = 0
+    self:setTotalCustomers()
+
 end
 
 function Stats:startKitchenPhase()
@@ -172,5 +180,24 @@ function Stats:startNightPhase()
     self.timerRunning = false
 
 end
+
+function Stats:setTotalCustomers()
+    -- sets early days to low number of customers
+    if self.day <= 3 then
+        self.totalCustomers = self.day
+    elseif self.day >= 4 and self.day <= 7 then
+        -- increase complexity by adding more customers 
+        self.totalCustomers = self.day + 1
+    elseif self.day > 7 then
+        -- max 8 customers in a day
+        self.totalCustomers = 8
+    end
+    return self.totalCustomers
+end 
+
+function Stats:increaseCustomerCount()
+    self.customerCount = self.customerCount + 1
+end
+
     
 return Stats

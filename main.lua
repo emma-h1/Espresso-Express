@@ -18,9 +18,11 @@ local anim8 = require "libs.anim8"
 local Ingredients = require "src.game.Ingredients"
 local Drink = require "src.game.Drink"
 local Tutorial = require "src.game.Tutorial"
+local Customer = require "src.game.Customer"
 
 local arrowX, arrowY = 890, 580
 local buttons = {}
+local customers = {}
 
 -- Variables for fade transition between states
 local fade = {
@@ -29,6 +31,8 @@ local fade = {
     musicVolume = .5     -- For fading out music
 }
 
+local spawnTimer = 0
+local spawnDelay = 2
 
 -- Load is executed only once; used to setup initial resource for your game
 function love.load()
@@ -57,6 +61,7 @@ function love.load()
     coffeeCupImage = love.graphics.newImage("graphics/animationSprites/coffeeCupAnimate.png")
     coffeeCupGrid = anim8.newGrid(230, 300, coffeeCupImage:getWidth(), coffeeCupImage:getHeight())
     coffeeCupAnimation = anim8.newAnimation(coffeeCupGrid('1-4', 1), 0.2)
+
 end
 
 -- When the game window resizes
@@ -169,8 +174,12 @@ function love.update(dt)
         end
     elseif gameState == "dayState" then
         stats:update(dt)
-        Sounds['dayMusic']:play()
+        spawnCustomers(dt)
 
+        Sounds['dayMusic']:play()
+        for i, cust in ipairs(customers) do
+            cust:update(dt)
+        end
         if bgTween then
             Sounds['dayMusic']:setVolume(fade.musicVolume)
             bgComplete = bgTween:update(dt)
@@ -179,6 +188,7 @@ function love.update(dt)
             if bgComplete then
                 Sounds['dayMusic']:stop()
                 Sounds['dayMusic']:setVolume(musicVolume)
+                resetCustomers()
                 stats:startNightPhase()
                 bgTween:reset()
                 bgTween = nil
@@ -298,8 +308,10 @@ function drawDayState()
     end
     love.graphics.draw(counter, 0, 0)
 
-    drink:draw()
-
+    drink:draw() 
+    for i, cust in ipairs(customers) do
+        cust:draw()
+    end
     if not stats.timerRunning then
         drink:reset()
         love.graphics.draw(timeOutClipboard, 0, -60)
@@ -333,4 +345,30 @@ function drawTutorialState()
     love.graphics.printf("Use arrows to navigate the tutorial", statFontSmall, gameWidth/2-320,670,600,"center")
     love.graphics.printf("Press Enter to return to Start screen", statFontLarge, gameWidth/2-320,700,600,"center")
     love.graphics.setColor(1,1,1,1)
+end
+
+function spawnCustomers(dt)
+    local randSprite = Customer.ANIMAL_TYPES[math.random(#Customer.ANIMAL_TYPES)]
+    spawnTimer = spawnTimer + dt
+    if stats.customerCount < stats.totalCustomers and spawnTimer >= spawnDelay then
+        local newCustomer = Customer(randSprite, nil, nil, stats.customerCount+1)
+        -- Generate an order for this customer
+        newCustomer:generateOrder()
+        table.insert(customers, newCustomer)
+        stats:increaseCustomerCount()
+        spawnTimer = 0
+        -- randomize customer spawn
+        if stats.customerCount >= 1 then
+            spawnDelay = math.random(8, 12)
+        else
+            spawnDelay = 2
+        end
+    end
+end
+
+function resetCustomers()
+    customers = {}
+    spawnTimer = 0
+    -- reset delay from longer range at start of new day
+    spawnDelay = 2
 end
