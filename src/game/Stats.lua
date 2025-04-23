@@ -14,7 +14,7 @@ function Stats:init()
 
     self.day = 0
 
-    self.maxSecs = 30 -- max seconds for the level
+    self.maxSecs = 45 -- max seconds for the level
     self.elapsedSecs = 0 -- elapsed seconds
     self.timeOut = false -- when time is out
     self.timerRunning = false -- control timer activation between day/night

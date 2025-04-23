@@ -96,6 +96,7 @@ function Customer:update(dt)
         self.customerState = "done"
       elseif self.orderTimer > 20 then
           self.customerState = "missed"
+          Sounds["angryCustomer"]:play()
       end
     end
   end 

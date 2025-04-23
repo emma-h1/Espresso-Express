@@ -3,8 +3,7 @@ local imgParticle = love.graphics.newImage("graphics/particles/34.png")
 local CustomerParticles = Class{}
 
 function CustomerParticles:init()
-    self.particleSystem = love.graphics.newParticleSystem(imgParticle,100) 
-                                                      -- image, #particles
+    self.particleSystem = love.graphics.newParticleSystem(imgParticle,100) -- image, #particles
     self.particleSystem:setParticleLifetime(0.0, 1.0) -- 0 to 2.0 secs
     self.particleSystem:setEmissionRate(0) -- No continuous emission
     self.particleSystem:setSizes(0.2, 0) -- Start tiny, shrink to 0

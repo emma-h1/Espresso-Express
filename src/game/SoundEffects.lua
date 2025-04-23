@@ -21,6 +21,8 @@ sounds['milkPour'] = love.audio.newSource('sounds/pouring-water.mp3', 'static')
 sounds['sugar'] = love.audio.newSource('sounds/sugar-into-sugar-bowl.mp3', 'static')
 sounds['syrup'] = love.audio.newSource('sounds/sharpie_on_paper.mp3', 'static')
 sounds['cream'] = love.audio.newSource('sounds/steam.mp3', 'static')
+sounds["coffeeSip"] = love.audio.newSource('sounds/sipping-coffee.mp3', 'static')
+sounds["angryCustomer"] = love.audio.newSource('sounds/angry-grunt.mp3', 'static')
 
 -- Config music options
 sounds['titleMusic']:setLooping(true) -- game music is looped

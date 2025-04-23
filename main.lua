@@ -150,7 +150,7 @@ function love.mousereleased(x, y, button)
             for _, customer in ipairs(customers) do
                 -- check if drink is being served to customer
                 if customer:checkDrinkCollision(drink) then
-                    customer:serve(drink)
+                    customer:serve(drink, stats)
                     -- clear the drink for next customer
                     drink:reset()
                     break
