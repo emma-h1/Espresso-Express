@@ -3,7 +3,10 @@ local Globals = require "src.Globals"
 local Ingredients = require "src.game.Ingredients"
 local CustomerParticles = require "src.game.CustomerParticles"
 local Drink = require "src.game.Drink"
+local Stats = require "src.game.Stats"
 local anim8 = require "libs.anim8"
+local Sounds = require "src.game.SoundEffects"
+
 
 local sw, sh = 384, 512 -- animale sprite width and height
 local customerSprites = love.graphics.newImage("graphics/sprites/character-sprites.png")
@@ -21,6 +24,7 @@ local speechBubble = love.graphics.newImage("graphics/detail/speech-bubble.png")
 
 local ingredients = Ingredients()  
 local unlocked = ingredients:getUnlocked()
+local stats = Stats()
 
 
 local Customer = Class{}
@@ -111,11 +115,9 @@ function Customer:draw()
       love.graphics.setColor(1,1,1)
     end  
   end
-
   if self.particles:isActive() then
-    self.particles:draw()
+    self.particles:draw(self.x + 50, self.y + 50)
   end
-
   
 end
 
@@ -170,17 +172,17 @@ function Customer:printOrder()
   -- if there are optional ingredients
   local addons = {}
 
-  if self.order.milk then
-      table.insert(addons, self.order.milk)
+  if self.order.milks then
+      table.insert(addons, self.order.milks)
   end
-  if self.order.syrup then
-      table.insert(addons, self.order.syrup)
+  if self.order.syrups then
+      table.insert(addons, self.order.syrups)
   end
-  if self.order.sugar then
-      table.insert(addons, self.order.sugar)
+  if self.order.sugars then
+      table.insert(addons, self.order.sugars)
   end
-  if self.order.whippedCream then
-      table.insert(addons, self.order.whippedCream)
+  if self.order.whippedCreams then
+      table.insert(addons, self.order.whippedCreams)
   end
 
   -- Concat addons to the order string
@@ -196,24 +198,30 @@ function Customer:printOrder()
   return orderText
 end
 
-function Customer:serve(drink)
-  if self:compareOrder(drink, self.order) then
+function Customer:serve(drink, stats)
+  if self:compareOrder(drink.includedIngredients, self.order) then
       self.customerState = "served"
       self.served = true
       self.particles:trigger(self.x + 50, self.y + 50)
-      print("Triggered particles!")
+      Sounds["coffeeSip"]:play()
 
-      -- clear drink
-      self.drink:reset()
+      if stats then
+        stats:addOrSubtractCoin(10)
+      end
       -- Add tip logic here
   else
       self.customerState = "missed"
+      Sounds["angryCustomer"]:play()
+      stats:addOrSubtractCoin(-2)
+
+
       -- add customer rating, leaves sad
   end
 end
 
+-- check if coffee served matches order
 function Customer:compareOrder(drink1, drink2)
-  local keys = {"cup", "coffee", "milk", "syrup", "sugar", "whippedCream"}
+  local keys = {"cups", "coffees", "milks", "syrups", "sugars", "whippedCreams"}
 
   for _, key in ipairs(keys) do
       if drink1[key] ~= drink2[key] then
@@ -223,6 +231,7 @@ function Customer:compareOrder(drink1, drink2)
   return true
 end
 
+-- helper function to check drink is colliding with customer
 function Customer:checkDrinkCollision(drink)
   local drinkW, drinkH = self.drink:getDimensions()
 
