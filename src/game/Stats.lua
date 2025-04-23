@@ -169,6 +169,7 @@ function Stats:clock()
         if self.coins >= 0 and (gameState == 'dayState' or gameState == 'kitchenState') then
             Sounds['timeOver']:play()
         end
+        self:addOrSubtractCoin(-2) -- Pay Rent
         self.timeOut = true
     end
 end

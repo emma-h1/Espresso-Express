@@ -358,7 +358,7 @@ function drawGameOverState()
     love.graphics.draw(gameOverBg, 0, 0)
     love.graphics.print("Game Over", gameOverFont, gameWidth/2 -120, 60)
     love.graphics.printf("Day "..tostring(stats.day).." End", statFontLarge, gameWidth/2-110,150,200,"center")
-    love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit: Total Coins:", statFontSmall, gameWidth/2-110,200,200,"center")
+    love.graphics.printf("Customers Served: Money Earned: Tips Earned: Drinks Thrown Away: Rent: Total Profit: Total Coins:" ..stats.coins, statFontSmall, gameWidth/2-110,200,200,"center")
     love.graphics.printf("You could not pay your rent, and the cafe was shut down", gameOverFont, gameWidth/2 - 350, 510, 650, "center")
 end
 
