@@ -133,6 +133,11 @@ function love.mousepressed(x ,y, button, istouch)
         shop:mousepressed(gx, gy)
     elseif button == 1 and gameState == 'kitchenState' then
         ingredients:mousepressed(gx, gy)
+        
+    elseif button == 1 and gameState == "dayState" then
+        if drink:isReadyToServe() then
+            drink:mousepressed(gx, gy)
+        end
     end
 end
 
@@ -140,14 +145,33 @@ function love.mousereleased(x, y, button)
     local gx, gy = Push:toGame(x,y)
     if button == 1 and gameState == 'kitchenState' then
         ingredients:mousereleased(gx, gy)
+    elseif button == 1 and gameState == 'dayState' then
+        if drink.dragging then 
+            for _, customer in ipairs(customers) do
+                -- check if drink is being served to customer
+                if customer:checkDrinkCollision(drink) then
+                    customer:serve(drink)
+                    -- clear the drink for next customer
+                    drink:reset()
+                    break
+                end
+            end
+        end
+        drink.dragging = false
+        drink.dragOffsetX = nil
+        drink.dragOffsetY = nil
     end
 end
 
-function love.mousemoved(x, y, button)
+function love.mousemoved(x, y, dx, dy, istouch)
     local gx, gy = Push:toGame(x,y)
-    if button == 1  and gameState == 'kitchenState' then
+    if gameState == 'kitchenState' then
         ingredients:mousemoved(gx, gy)
+    elseif gameState == 'dayState' then
+        drink:mousemoved(gx, gy)
+
     end
+
 end
 
 -- Update is executed each frame, dt is delta time (a fraction of a sec)

@@ -44,6 +44,34 @@ function Drink:init()
     self.isAnimating = nil -- Is an animation happening true/nil
     self.currentAnimationSheet = nil -- For drawing
     self.currentAnimation = nil -- For drawing
+
+    -- get dimensions based on cup requested (helper for dragging)
+    self.cupSizes = {
+
+        mug = {width = self.mug:getWidth(), height = self.mug:getHeight()},
+        glass = {width = self.glass:getWidth(), height = self.glass:getHeight()},
+
+    }
+    
+    self.dragging = nil
+end
+
+-- help get dimensions of depending whats ordered
+function Drink:getDimensions()
+    local cup = self.includedIngredients.cups
+    if cup == "Mug" then
+        return self.cupSizes.mug.width, self.cupSizes.mug.height
+    elseif cup == "Glass" then
+        return self.cupSizes.glass.width, self.cupSizes.glass.height
+    else
+        return 100, 100
+    end
+ 
+end
+
+-- helpfuler function so ingredients and drink dragging logic doesnt overlap
+function Drink:isReadyToServe()
+    return self.includedIngredients.cups ~= nil and self.includedIngredients.coffees ~= nil
 end
 
 -- Add an ingredient to drink
@@ -65,6 +93,8 @@ function Drink:addIngredient(category, name, ingredient)
     if not self.includedIngredients[category] then
         -- Play sound effects
         if category == "cups" then
+            self.width = ingredient.itemWidth
+            self.height = ingredient.itemHeight
             Sounds['glassClink']:play()
         elseif category == "coffees" then
             Sounds['coffeePour']:play()
@@ -170,6 +200,31 @@ function Drink:draw()
     -- Draw the animation, if occurring
     if self.isAnimating then
         self.currentAnimation:draw(self.currentAnimationSheet, self.animationX, self.animationY)
+    end
+end
+
+function Drink:mousepressed(x, y)
+    -- expand mouse click boundary
+    local marginX = 35
+    local marginY = 100
+    -- no dragging during animation, and if drink not being served
+    if self.isAnimating then return end
+    if not self:isReadyToServe() then return end
+
+    local drinkW, drinkH = self:getDimensions()
+    if x >= self.x - marginX and x <= self.x + drinkW + marginX and y >= self.y - marginY and y <= self.y + drinkH + marginY then
+        self.dragging = {
+            offsetX = x - self.x,
+            offsetY = y - self.y
+        }        
+    end
+end
+
+function Drink:mousemoved(x, y)
+    -- Drink follows mouse as it's being dragged
+    if self.dragging then
+        self.x = x - self.dragging.offsetX
+        self.y = y - self.dragging.offsetY
     end
 end
 

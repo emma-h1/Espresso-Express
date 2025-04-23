@@ -6,5 +6,6 @@ debugFlag = false
 titleFont = love.graphics.newFont('graphics/fonts/CoffeCake.ttf', 36)
 gameOverFont = love.graphics.newFont('graphics/fonts/CoffeCake.ttf', 48)
 statFontSmall = love.graphics.newFont('graphics/fonts/Cafe Matcha.ttf', 28)
+orderFont = love.graphics.newFont('graphics/fonts/Cafe Matcha.ttf', 34)
 statFontLarge = love.graphics.newFont('graphics/fonts/CoffeCake.ttf', 36)
 musicVolume = .5
